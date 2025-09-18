@@ -173,7 +173,7 @@ pub fn cli_main(parameters: CLIParameters) -> Result<(), Box<dyn Error>> {
                         CLIOutputType::CSV => {
                             csv_writer
                                 .serialize(SongHistoryRecord {
-                                    song_name: song_name,
+                                    song_name,
                                     album: Some(
                                         message
                                             .album_name

@@ -178,6 +178,12 @@ pub fn gui_main(recording: bool, input_file: Option<&str>, enable_mpris_cli: boo
         }
 
         impl ContextMenuItemsExt for gtk::Menu {
+            fn connect_activate_menu_item<F: Fn(&gtk::MenuItem) + 'static>(&self, name: &str, f: F) -> () {
+                if let Some(menu_item) = self.get_menu_item(name) {
+                    menu_item.connect_activate(f);
+                }
+            }
+
             fn get_menu_item(&self, name: &str) -> Option<gtk::MenuItem> {
                 for child in self.get_children() {
                     if let Ok(menu_item) = child.downcast::<gtk::MenuItem>() {
@@ -186,13 +192,7 @@ pub fn gui_main(recording: bool, input_file: Option<&str>, enable_mpris_cli: boo
                         }
                     }
                 }
-                return None;
-            }
-
-            fn connect_activate_menu_item<F: Fn(&gtk::MenuItem) + 'static>(&self, name: &str, f: F) -> () {
-                if let Some(menu_item) = self.get_menu_item(name) {
-                    menu_item.connect_activate(f);
-                }
+                None
             }
 
             fn show_menu_item(&self, name: &str) -> Option<()> {
@@ -372,7 +372,7 @@ pub fn gui_main(recording: bool, input_file: Option<&str>, enable_mpris_cli: boo
         let add_to_favorites_fn = clone!(@strong gui_tx => move |menu_item: &gtk::MenuItem| {
             let tree_view = menu_item.get_tree_view();
             if let Some(song_record) = tree_view.get_selected_song_record() {
-                gui_tx.send(GUIMessage::AddFavorite(song_record)).unwrap();
+                gui_tx.send(AddFavorite(song_record)).unwrap();
             }
         });
         history_context_menu.connect_activate_menu_item("add_to_favorites",add_to_favorites_fn);
@@ -380,7 +380,7 @@ pub fn gui_main(recording: bool, input_file: Option<&str>, enable_mpris_cli: boo
         let remove_from_favorites_fn = clone!(@strong gui_tx => move |menu_item: &gtk::MenuItem| {
             let tree_view = menu_item.get_tree_view();
             if let Some(song_record) = tree_view.get_selected_song_record() {
-                gui_tx.send(GUIMessage::RemoveFavorite(song_record)).unwrap();
+                gui_tx.send(RemoveFavorite(song_record)).unwrap();
             }
         });
         history_context_menu.connect_activate_menu_item("remove_from_favorites",remove_from_favorites_fn.clone());
@@ -443,7 +443,7 @@ pub fn gui_main(recording: bool, input_file: Option<&str>, enable_mpris_cli: boo
                 let cover = cover.clone();
                 glib::idle_add_local(move || {
                     cover.set_from_pixbuf(pixbuf.as_ref());
-                    return glib::Continue(false);
+                    return Continue(false);
                 });
             }
         );
@@ -514,7 +514,7 @@ pub fn gui_main(recording: bool, input_file: Option<&str>, enable_mpris_cli: boo
                 
                 let mut new_preference = Preferences::new();
                 new_preference.current_device_name = Some(device_name_str.to_string());
-                gui_tx.send(GUIMessage::UpdatePreference(new_preference)).unwrap();
+                gui_tx.send(UpdatePreference(new_preference)).unwrap();
 
                 // Sync the monitor check box
                 if recognize_from_my_speakers_checkbox.is_visible() {
@@ -650,13 +650,13 @@ pub fn gui_main(recording: bool, input_file: Option<&str>, enable_mpris_cli: boo
         
         wipe_history_button.connect_clicked(clone!(@strong gui_tx => move |_| {
 
-            gui_tx.send(GUIMessage::WipeSongHistory).unwrap();
+            gui_tx.send(WipeSongHistory).unwrap();
 
         }));
         
         favorites_button.connect_clicked(clone!(@strong gui_tx => move |_| {
 
-            gui_tx.send(GUIMessage::ShowFavorites).unwrap();
+            gui_tx.send(ShowFavorites).unwrap();
 
         }));
 
@@ -693,13 +693,13 @@ pub fn gui_main(recording: bool, input_file: Option<&str>, enable_mpris_cli: boo
         _enable_mpris_box.connect_toggled(clone!(@strong _enable_mpris_box, @strong gui_tx => move |_| {
             let mut new_preference: Preferences = Preferences::new();
             new_preference.enable_mpris = Some(_enable_mpris_box.get_active());
-            gui_tx.send(GUIMessage::UpdatePreference(new_preference)).unwrap();
+            gui_tx.send(UpdatePreference(new_preference)).unwrap();
         }));
 
         notification_enable_checkbox.connect_toggled(clone!(@strong notification_enable_checkbox, @strong gui_tx => move |_| {
             let mut new_preference: Preferences = Preferences::new();
             new_preference.enable_notifications = Some(notification_enable_checkbox.get_active());
-            gui_tx.send(GUIMessage::UpdatePreference(new_preference)).unwrap();
+            gui_tx.send(UpdatePreference(new_preference)).unwrap();
         }));
 
         gui_rx.attach(None, clone!(@strong application, @strong main_window, @strong results_frame,
@@ -818,12 +818,11 @@ pub fn gui_main(recording: bool, input_file: Option<&str>, enable_mpris_cli: boo
                     else {
                         recognize_from_my_speakers_checkbox.hide();
                     }
-                    
-                    // Should we start recording yet? (will depend of the possible
-                    // command line flags of the application)
 
+                    // Should we start recording yet?
+                    // (will depend on the possible command line flags of the application)
                     if recording {
-                    
+
                         if let Some(active_item) = combo_box.get_active_iter() {
                             let device_name: String = combo_box_model.get_value(&active_item, 1).get().unwrap().unwrap();
 
@@ -952,14 +951,14 @@ pub fn gui_main(recording: bool, input_file: Option<&str>, enable_mpris_cli: boo
         // GUI instance is attempted to be launched
         main_window.present();
         
-        //Close all windows when main window is closed
+        //Close all windows when the main window is closed
         main_window.connect_delete_event(|_, _| {
             for window in gtk::Window::list_toplevels() {
                 if let Ok(window) = window.downcast::<gtk::Window>() {
                     window.close();
                 }
             }
-            gtk::Inhibit(false) // Do not inhibit the default delete event behavior
+            Inhibit(false) // Do not inhibit the default delete event behavior
         });
     });
     

@@ -122,7 +122,7 @@ impl SongRecordInterface for RecognitionHistoryInterface {
     ) -> Result<Self, Box<dyn Error>> {
         let mut interface = RecognitionHistoryInterface {
             csv_path: get_csv_path()?,
-            gtk_list_store: gtk_list_store,
+            gtk_list_store,
         };
 
         if let Err(error_info) = interface.load() {
@@ -152,7 +152,7 @@ impl SongRecordInterface for RecognitionHistoryInterface {
                     self.gtk_list_store.add_song_history_record(&result?)
                 }
             }
-            _ => {} // File does not exists, ignore
+            _ => {} // File does not exist, ignore
         };
         Ok(())
     }
@@ -202,7 +202,7 @@ impl SongRecordInterface for FavoritesInterface {
     ) -> Result<Self, Box<dyn Error>> {
         let mut interface = FavoritesInterface {
             csv_path: get_csv_path()?,
-            gtk_list_store: gtk_list_store,
+            gtk_list_store,
             is_favorite: HashSet::<Song>::new(),
         };
 
@@ -229,7 +229,7 @@ impl SongRecordInterface for FavoritesInterface {
                     self.is_favorite.insert(record.get_song());
                 }
             }
-            _ => {} // File does not exists, ignore
+            _ => {} // File does not exist, ignore
         };
         Ok(())
     }
