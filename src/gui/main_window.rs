@@ -858,7 +858,7 @@ pub fn gui_main(recording: bool, input_file: Option<&str>, enable_mpris_cli: boo
                             track_key: Some(message.track_key),
                             release_year: Some(message.release_year.as_ref().unwrap_or(&"".to_string()).to_string()),
                             genre: Some(message.genre.as_ref().unwrap_or(&"".to_string()).to_string()),
-                            recognition_date: Local::now().format("%c").to_string(),
+                            recognition_date: Local::now().format("%Y-%m-%d %H:%M:%S%.f").to_string(),
                             
                         });
 

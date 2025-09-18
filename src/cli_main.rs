@@ -196,7 +196,7 @@ pub fn cli_main(parameters: CLIParameters) -> Result<(), Box<dyn Error>> {
                                             .unwrap_or(&"".to_string())
                                             .to_string(),
                                     ),
-                                    recognition_date: Local::now().format("%c").to_string(),
+                                    recognition_date: Local::now().format("%Y-%m-%d %H:%M:%S%.f").to_string(),
                                 })
                                 .unwrap();
                             csv_writer.flush().unwrap();

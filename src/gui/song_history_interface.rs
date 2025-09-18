@@ -110,9 +110,9 @@ impl dyn SongRecordInterface {}
 
 #[test]
 fn test_item_date() {
-  let s = "Sat Aug 17 22:44:43 2024";
-  let parsed = chrono::NaiveDateTime::parse_from_str(&s, "%c").unwrap();
-  assert_eq!(&parsed.format("%c").to_string(), s);
+  let s = "2024-08-17 22:44:43.000";
+  let parsed = chrono::NaiveDateTime::parse_from_str(&s, "%Y-%m-%d %H:%M:%S%.f").unwrap();
+  assert_eq!(&parsed.format("%Y-%m-%d %H:%M:%S%.f").to_string(), s);
 }
 
 impl SongRecordInterface for RecognitionHistoryInterface {
@@ -145,7 +145,7 @@ impl SongRecordInterface for RecognitionHistoryInterface {
                 let mut read = reader.deserialize().collect::<Vec<_>>();
                 fn item_date(item: &csv::Result<SongHistoryRecord>) -> Option<chrono::NaiveDateTime> {
                   let s = &item.as_ref().ok()?.recognition_date;
-                  chrono::NaiveDateTime::parse_from_str(s, "%c").ok()
+                  chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%d %H:%M:%S%.f").ok()
                 }
                 read.sort_by_cached_key(item_date);
                 for result in read {
