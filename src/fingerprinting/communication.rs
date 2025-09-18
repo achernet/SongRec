@@ -40,23 +40,58 @@ pub fn recognize_song_from_signature(signature: &DecodedSignature) -> Result<Val
     headers.insert("Content-Language", "en_US".parse()?);
 
     let client = reqwest_client()?;
-    let response = client.post(&url)
-        .timeout(Duration::from_secs(20))
-        .query(&[
-            ("sync", "true"),
-            ("webv3", "true"),
-            ("sampling", "true"),
-            ("connected", ""),
-            ("shazamapiversion", "v3"),
-            ("sharehub", "true"),
-            ("video", "v3")
-        ])
-        .headers(headers)
-        .json(&post_data)
-        .send()?;
-    
-    Ok(response.json()?)
-    
+    let max_retries = 10;
+    let timeout = Duration::from_secs(15);
+    for attempt in 0..=max_retries {
+        let response = client
+            .post(&url)
+            .timeout(timeout)
+            .query(&[
+                ("sync", "true"),
+                ("webv3", "true"),
+                ("sampling", "true"),
+                ("connected", ""),
+                ("shazamapiversion", "v3"),
+                ("sharehub", "true"),
+                ("video", "v3"),
+            ])
+            .headers(headers.clone())
+            .json(&post_data)
+            .send();
+
+        match response {
+            Ok(resp) => {
+                let status = resp.status();
+                if status.as_u16() == 429 || status.as_u16() == 529 {
+                    if attempt < max_retries {
+                        let backoff = Duration::from_millis((1.5f64.powi(attempt) * 1000f64) as u64);
+                        eprintln!(
+                            "Rate limited ({}), retrying in {}s...",
+                            status,
+                            backoff.as_secs()
+                        );
+                        std::thread::sleep(backoff);
+                        continue;
+                    } else {
+                        return Err(format!(
+                            "Max retries exceeded due to rate limiting ({}).",
+                            status
+                        )
+                            .into());
+                    }
+                } else if status.is_success() {
+                    return Ok(resp.json()?);
+                } else {
+                    return Err(format!("Unexpected HTTP status: {}", status).into());
+                }
+            }
+            Err(err) => {
+                return Err(Box::new(err));
+            }
+        }
+    }
+
+    Err("Unreachable: retry loop exhausted".into())
 }
 
 pub fn obtain_raw_cover_image(url: &str) -> Result<Vec<u8>, Box<dyn Error>> {
