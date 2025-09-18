@@ -86,7 +86,6 @@ pub fn http_thread(http_rx: mpsc::Receiver<HTTPMessage>, gui_tx: glib::Sender<GU
                     Err(error) => {
                         match error.to_string().as_str() {
                             a if a == gettext("No match for this song") => {
-                                gui_tx.send(GUIMessage::ErrorMessage(error.to_string())).unwrap();
                                 gui_tx.send(GUIMessage::NetworkStatus(true)).unwrap();
                             }
                             _ => {
