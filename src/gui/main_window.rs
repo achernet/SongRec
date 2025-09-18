@@ -152,6 +152,11 @@ pub fn gui_main(recording: bool, input_file: Option<&str>, enable_mpris_cli: boo
         let mut song_history_interface = RecognitionHistoryInterface::new(history_list_store, obtain_recognition_history_csv_path).unwrap();
         let history_tree_view: gtk::TreeView = main_builder.get_object("history_tree_view").unwrap();
 
+        for (i, column) in history_tree_view.get_columns().iter().enumerate() {
+            column.set_resizable(true);
+            column.set_sort_column_id(i as i32);
+        }
+
         let favorites_list_store = favorites_builder.get_object("favorites_list_store").unwrap();
         let favorites_interface = Arc::new(RwLock::new(FavoritesInterface::new(favorites_list_store, obtain_favorites_csv_path).unwrap()));
         let favorites_tree_view: gtk::TreeView = favorites_builder.get_object("favorites_tree_view").unwrap();
