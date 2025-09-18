@@ -1,8 +1,8 @@
 use cpal::platform::{Host, Device};
 use cpal::traits::HostTrait;
 
-use pulsectl::controllers::{SourceController, AppControl, DeviceControl};
-use pulsectl::controllers::types::DeviceInfo;
+use pactl::controllers::{SourceController, AppControl, DeviceControl};
+use pactl::controllers::types::DeviceInfo;
 
 use crate::audio_controllers::audio_backend::AudioBackend;
 use crate::core::thread_messages::DeviceListItem;
