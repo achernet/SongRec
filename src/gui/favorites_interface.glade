@@ -209,6 +209,11 @@
     <property name="can-focus">False</property>
     <property name="icon-name">edit-find</property>
   </object>
+  <object class="GtkImage" id="website_icon_1">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">emblem-web</property>
+  </object>
   <object class="GtkMenu" id="list_view_context_menu">
     <property name="can-focus">False</property>
     <child>
@@ -257,6 +262,16 @@
         <property name="visible">True</property>
         <property name="can-focus">False</property>
         <property name="image">youtube_icon_2</property>
+        <property name="use-stock">False</property>
+        <property name="always-show-image">True</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkImageMenuItem" id="show_on_shazam">
+        <property name="label" translatable="yes">Show on Shazam</property>
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="image">website_icon_1</property>
         <property name="use-stock">False</property>
         <property name="always-show-image">True</property>
       </object>

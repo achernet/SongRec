@@ -369,6 +369,18 @@ pub fn gui_main(recording: bool, input_file: Option<&str>, enable_mpris_cli: boo
         history_context_menu.connect_activate_menu_item("search_on_youtube", search_on_youtube_fn);
         favorites_context_menu.connect_activate_menu_item("search_on_youtube", search_on_youtube_fn);
 
+        let show_on_shazam_fn = move |menu_item: &gtk::MenuItem| {
+            let tree_view = menu_item.get_tree_view();
+            if let Some(song_record) = tree_view.get_selected_song_record() {
+                let track_key = song_record.track_key.unwrap_or(String::new());
+                println!("Track key: {}", track_key);
+                let url = format!("https://www.shazam.com/track/{}", track_key);
+                gtk::show_uri(None, &url, gtk::get_current_event_time()).unwrap();
+            }
+        };
+        history_context_menu.connect_activate_menu_item("show_on_shazam", show_on_shazam_fn);
+        favorites_context_menu.connect_activate_menu_item("show_on_shazam", show_on_shazam_fn);
+
         let add_to_favorites_fn = clone!(@strong gui_tx => move |menu_item: &gtk::MenuItem| {
             let tree_view = menu_item.get_tree_view();
             if let Some(song_record) = tree_view.get_selected_song_record() {
